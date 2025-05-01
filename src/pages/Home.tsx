@@ -1,12 +1,10 @@
 import { useState } from "react"
-import { useNavigate } from "react-router-dom"
 import Sidebar from "../components/sidebar"
 import ShoppingListView from "../components/shopping-list-view"
 import { PlusCircle } from 'lucide-react'
 
 function Home() {
   const [activeList, setActiveList] = useState("Fruits")
-  const navigate = useNavigate()
   
   const isLoggedIn = localStorage.getItem("isLoggedIn") === "true"
   
