@@ -14,8 +14,8 @@ const App = () => {
         <Route path="/home" element={<HomePage />} />
 
       {/* Redirects */}
-      <Route path="/" element={<Navigate to="/catalog" replace />} />
-      <Route path="*" element={<Navigate to="/catalog" replace />} />
+      <Route path="/" element={<Navigate to="/home" replace />} />
+      <Route path="*" element={<Navigate to="/home" replace />} />
     </Routes>
   );
 };
