@@ -1,132 +1,116 @@
-import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../utils/AuthProvider";
-import axios from "../utils/AxiosInstance";
-import { useMutation } from "@tanstack/react-query";
+// LoginPage.tsx
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../utils/AuthProvider';
+import { useForm } from 'react-hook-form';
+import { useMutation } from '@tanstack/react-query';
+import axios from 'axios';
 
 export type LoginInput = {
   email: string;
   password: string;
 };
 
-export const Login = () => {
+const LoginPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
+
   const {
     register,
     handleSubmit,
-    formState: { errors }
+    formState: { errors },
   } = useForm<LoginInput>();
 
   const handleLogin = async (data: LoginInput) => {
-    try {
-      const res = await axios.post<{ access_token: string }>(
-        "/api/auth/login",
-        {
-          email: data.email,
-          password: data.password
-        }
-      );
-
-      if (res.data) {
-        login(res.data.access_token);
-        navigate("/");
-      } else {
-        alert("Username or password is wrong");
+    const res = await axios.post<{ access_token: string }>(
+      `${import.meta.env.VITE_API_URL}/auth/login`,
+      {
+        email: data.email,
+        password: data.password,
       }
-    } catch (err) {
-      alert("Username or password is wrong");
+    );
+    
+
+    if (res.data?.access_token) {
+      login(res.data.access_token);
+      navigate('/catalog');
+    } else {
+      throw new Error('Login failed');
     }
   };
 
-  const { mutate, isPending } = useMutation({
-    mutationFn: handleLogin
+  const { mutate, isPending, error } = useMutation({
+    mutationFn: handleLogin,
   });
 
+  const togglePasswordVisibility = () => setShowPassword(prev => !prev);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-md">
-        {isPending && (
-          <div className="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-20 rounded-2xl">
-            <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        )}
-        <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
-          Login to Your Account
-        </h2>
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-sm border border-gray-100">
+        <h1 className="text-2xl font-semibold text-center mb-6">Log In</h1>
 
-        <form
-          className="space-y-5"
-          onSubmit={handleSubmit((data) => mutate(data))}
-        >
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Email address
+        <form onSubmit={handleSubmit((data) => mutate(data))}>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="email">
+              Email
             </label>
             <input
+              {...register('email', { required: true })}
               id="email"
-              type="email"
-              required
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              placeholder="you@example.com"
-              {...register("email")}
+              type="text"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400"
             />
-            {errors.email && (
-              <p className="text-red-600 text-xs italic" id="titleError">
-                Email is required.
-              </p>
-            )}
+            {errors.email && <p className="text-sm text-red-500 mt-1">Email is required</p>}
           </div>
 
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Password
-            </label>
+          <div className="mb-4">
+            <div className="flex justify-between mb-1">
+              <label className="block text-sm font-medium text-gray-700" htmlFor="password">
+                Password
+              </label>
+              <button
+                type="button"
+                onClick={togglePasswordVisibility}
+                className="text-sm text-gray-500 hover:underline"
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
             <input
+              {...register('password', { required: true })}
               id="password"
-              type="password"
-              required
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              placeholder="••••••••"
-              {...register("password")}
+              type={showPassword ? 'text' : 'password'}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400"
             />
-            {errors.password && (
-              <p className="text-red-600 text-xs italic" id="titleError">
-                Password is required.
-              </p>
-            )}
+            {errors.password && <p className="text-sm text-red-500 mt-1">Password is required</p>}
           </div>
 
-          <div>
-            <button
-              type="submit"
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200"
-            >
-              Sign In
-            </button>
+          <button
+            type="submit"
+            disabled={isPending}
+            className="w-full py-2 px-4 bg-gray-500 hover:bg-gray-600 rounded-md text-white font-medium focus:outline-none mb-4"
+          >
+            {isPending ? 'Logging in...' : 'Log In'}
+          </button>
+
+          {error && (
+            <p className="text-center text-sm text-red-500 mb-4">
+              Invalid email or password.
+            </p>
+          )}
+
+          <div className="text-center">
+            <span className="text-gray-600 text-sm">Don't have an account? </span>
+            <Link to="/register" className="text-sm font-medium text-black hover:underline">
+              Sign up
+            </Link>
           </div>
         </form>
-
-        <p className="mt-4 text-center text-sm text-gray-600">
-          Don't have an account?{" "}
-          <a
-            onClick={() => {
-              navigate("/register");
-            }}
-            className="text-blue-600 hover:underline"
-          >
-            Sign up
-          </a>
-        </p>
       </div>
     </div>
   );
 };
 
-export default Login;
+export default LoginPage;

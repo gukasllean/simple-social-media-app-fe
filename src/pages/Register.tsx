@@ -1,139 +1,135 @@
-import { useMutation } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
-import axios from "../utils/AxiosInstance";
+// RegisterPage.tsx
+import { useNavigate, Link } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import axios from 'axios';
+import { useState } from 'react';
 
-export type RegisterInput = {
-  email: string;
+type RegisterInput = {
   username: string;
+  email: string;
   password: string;
 };
 
-export const Register = () => {
-  const navigate = useNavigate();
+const RegisterPage = () => {
+  const navigate = useNavigate(); // Make sure you have this import from react-router-dom
+  const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     register,
     handleSubmit,
-    formState: { errors }
+    formState: { errors },
   } = useForm<RegisterInput>();
-  const handleRegister = async (data: RegisterInput) => {
+
+  const onSubmit = async (data: RegisterInput) => {
+    setErrorMessage('');
+    setIsSubmitting(true);
     try {
-      await axios.post("/api/auth/register", {
-        email: data.email,
-        username: data.username,
-        password: data.password
-      });
-      alert("User successfully registered");
-      navigate("/login");
-    } catch (err) {
-      alert("Username or email already registered");
+      const response = await axios.post<{ access_token: string }>(
+        `${import.meta.env.VITE_API_URL}/auth/register`,
+        data
+      );
+
+      localStorage.setItem('token', response.data.access_token);
+      navigate('/login'); // redirect to homepage after registration
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Registration failed';
+      setErrorMessage(message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
-  const { mutate } = useMutation({ mutationFn: handleRegister });
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-md">
-        <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
-          Create an Account
-        </h2>
+    <div className="flex items-center justify-center min-h-screen bg-gray-50 px-4">
+      <div className="w-full max-w-md p-8 bg-white rounded-lg shadow border border-gray-200">
+        <h1 className="text-2xl font-bold text-center mb-6">Create an Account</h1>
 
-        <form
-          className="space-y-5"
-          onSubmit={handleSubmit((data) => mutate(data))}
-        >
-          <div>
-            <label
-              htmlFor="username"
-              className="block text-sm font-medium text-gray-700"
-            >
+        {errorMessage && (
+          <p className="mb-4 text-sm text-red-600 text-center">{errorMessage}</p>
+        )}
+
+        <form onSubmit={handleSubmit(onSubmit)}>
+          {/* Username */}
+          <div className="mb-4">
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
               Username
             </label>
             <input
               id="username"
               type="text"
-              required
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              placeholder="yourusername"
-              {...register("username")}
+              {...register('username', { required: 'Username is required' })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-gray-400"
             />
-
-            {errors.username && (
-              <p className="text-red-600 text-xs italic" id="titleError">
-                Username is required.
-              </p>
-            )}
+            {errors.username && <p className="text-sm text-red-500 mt-1">{errors.username.message}</p>}
           </div>
 
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Email address
+          {/* Email */}
+          <div className="mb-4">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              Email
             </label>
             <input
               id="email"
               type="email"
-              required
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              placeholder="you@example.com"
-              {...register("email")}
+              {...register('email', {
+                required: 'Email is required',
+                pattern: { value: /^\S+@\S+$/i, message: 'Invalid email address' },
+              })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-gray-400"
             />
-            {errors.email && (
-              <p className="text-red-600 text-xs italic" id="titleError">
-                Email is required.
-              </p>
-            )}
+            {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>}
           </div>
 
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Password
-            </label>
+          {/* Password */}
+          <div className="mb-4">
+            <div className="flex justify-between items-center mb-1">
+              <label htmlFor="password" className="text-sm font-medium text-gray-700">
+                Password
+              </label>
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="text-sm text-gray-500 hover:underline"
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
             <input
               id="password"
-              type="password"
-              required
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              placeholder="••••••••"
-              {...register("password")}
+              type={showPassword ? 'text' : 'password'}
+              {...register('password', {
+                required: 'Password is required',
+                minLength: { value: 6, message: 'Password must be at least 6 characters' },
+              })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-gray-400"
             />
-            {errors.password && (
-              <p className="text-red-600 text-xs italic" id="titleError">
-                Password is required.
-              </p>
-            )}
+            {errors.password && <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>}
           </div>
 
-          <div>
-            <button
-              type="submit"
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200"
-            >
-              Register
-            </button>
-          </div>
-        </form>
-
-        <p className="mt-4 text-center text-sm text-gray-600">
-          Already have an account?{" "}
-          <a
-            onClick={() => {
-              navigate("/login");
-            }}
-            className="text-blue-600 hover:underline"
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className={`w-full py-2 px-4 rounded-md text-white font-medium focus:outline-none transition ${
+              isSubmitting ? 'bg-gray-300 cursor-not-allowed' : 'bg-gray-600 hover:bg-gray-700'
+            }`}
           >
-            Login
-          </a>
-        </p>
+            {isSubmitting ? 'Creating...' : 'Create Account'}
+          </button>
+
+          {/* Footer */}
+          <p className="text-sm text-center mt-4">
+            Already have an account?{' '}
+            <Link to="/login" className="font-medium text-gray-800 hover:underline">
+              Log In
+            </Link>
+          </p>
+        </form>
       </div>
     </div>
   );
 };
 
-export default Register;
+export default RegisterPage;
