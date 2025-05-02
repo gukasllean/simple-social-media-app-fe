@@ -45,7 +45,7 @@ function Home() {
       setError(null);
 
       // Mengambil semua kategori dengan item-nya
-      const response = await axios.get<Category[]>(`${API_BASE_URL}/categories`);
+      const response = await axios.get<Category[]>(`${API_BASE_URL}api/categories`);
       
       // Filter hanya kategori aktif
       const activeCategories = response.data.filter(category => category.isActive);
@@ -82,7 +82,7 @@ function Home() {
   // Fungsi untuk menghapus item
   const handleDeleteItem = async (itemId: number) => {
     try {
-      await axios.delete(`${API_BASE_URL}/items/${itemId}`);
+      await axios.delete(`${API_BASE_URL}api/items/${itemId}`);
       
       // Refresh data setelah menghapus
       fetchData();
@@ -113,7 +113,7 @@ function Home() {
     }
 
     try {
-      await axios.patch(`${API_BASE_URL}/items/${selectedItem.id}`, { 
+      await axios.patch(`${API_BASE_URL}items/${selectedItem.id}`, { 
         itemName: editItemName,
         quantity: editItemQuantity 
       });
