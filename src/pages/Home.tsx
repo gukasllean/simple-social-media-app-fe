@@ -113,7 +113,7 @@ function Home() {
     }
 
     try {
-      await axios.patch(`${API_BASE_URL}items/${selectedItem.id}`, { 
+      await axios.patch(`${API_BASE_URL}/items/${selectedItem.id}`, { 
         itemName: editItemName,
         quantity: editItemQuantity 
       });
