@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { PlusCircle, Trash, Edit, X, User } from 'lucide-react';
 import axios from "../utils/AxiosInstance";
-import { useAuth } from "../utils/AuthProvider";
 
 // Interface yang sesuai dengan entity backend
 interface Category {
