@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./pages/Login";
 import RegisterPage from "./pages/Register";
 import HomePage from "./pages/Home";
+import ProfilePage from './pages/Profile';
 
 const App = () => {
   return (
@@ -12,6 +13,7 @@ const App = () => {
 
       {/* Protected routes */}
         <Route path="/home" element={<HomePage />} />
+        <Route path="/profile" element={<ProfilePage />} />
 
       {/* Redirects */}
       <Route path="/" element={<Navigate to="/home" replace />} />

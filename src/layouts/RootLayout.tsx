@@ -1,10 +1,10 @@
 import { Outlet } from 'react-router-dom'
-import { Sidebar } from 'lucide-react'
+import Navbar from '../components/Navbar'
 
 const RootLayout = () => {
   return (
     <div>
-      <Sidebar />
+      <Navbar />
       <div className="container mx-auto px-4">
         <Outlet />
       </div>
