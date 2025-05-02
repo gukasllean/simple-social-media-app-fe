@@ -19,9 +19,7 @@ interface ShoppingItem {
   category: Category;
 }
 
-// Base URL API
-const API_BASE_URL = "https://finalweb2be.vercel.app/api";
-
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 function Home() {
   const [showItemActions, setShowItemActions] = useState(false);
   const [selectedItem, setSelectedItem] = useState<ShoppingItem | null>(null);
