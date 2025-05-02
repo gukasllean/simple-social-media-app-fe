@@ -80,7 +80,7 @@ function Home() {
   // Fungsi untuk menghapus item
   const handleDeleteItem = async (itemId: number) => {
     try {
-      await axios.delete(`${API_BASE_URL}/items${itemId}`);
+      await axios.delete(`${API_BASE_URL}/items/${itemId}`);
       
       // Refresh data setelah menghapus
       fetchData();
